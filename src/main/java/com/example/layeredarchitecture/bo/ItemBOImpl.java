@@ -1,49 +1,54 @@
 package com.example.layeredarchitecture.bo;
 
-import com.example.layeredarchitecture.dao.custom.CustomerDAO;
+import com.example.layeredarchitecture.bo.custom.ItemBO;
+import com.example.layeredarchitecture.dao.DAOFactory;
 import com.example.layeredarchitecture.dao.custom.ItemDAO;
-import com.example.layeredarchitecture.dao.custom.impl.CustomerDAOImpl;
-import com.example.layeredarchitecture.dao.custom.impl.ItemDAOImpl;
+import com.example.layeredarchitecture.entity.Item;
 import com.example.layeredarchitecture.model.ItemDTO;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class ItemBOImpl implements ItemBO {
-    ItemDAO itemDAO=new ItemDAOImpl();
+    ItemDAO itemDAO = (ItemDAO) DAOFactory.getDaoFactory().getDAO(DAOFactory.DAOTypes.ITEM);
+
     @Override
-    public ArrayList<ItemDTO> getAll() throws SQLException, ClassNotFoundException {
-        return itemDAO.getAll() ;
+    public ArrayList<ItemDTO> getAllItem() throws SQLException, ClassNotFoundException {
+        ArrayList<Item> items=itemDAO.getAll();
+        ArrayList<ItemDTO> itemDTOS=new ArrayList<>();
+        for (Item item:items) {
+            itemDTOS.add(new ItemDTO(item.getCode(),item.getDescription(),item.getUnitPrice(),item.getQtyOnHand()));
+        }
+        return itemDTOS;
     }
 
     @Override
-    public void delete(String code) throws SQLException, ClassNotFoundException {
-         itemDAO.delete(code);
-
+    public boolean saveItem(ItemDTO entity) throws SQLException, ClassNotFoundException {
+        return itemDAO.save(new Item(entity.getCode(),entity.getDescription(), entity.getQtyOnHand(), entity.getUnitPrice()));
+    }
+    @Override
+    public boolean updateItem(ItemDTO entity) throws SQLException, ClassNotFoundException {
+        return itemDAO.update(new Item(entity.getCode(),entity.getDescription(), entity.getQtyOnHand(), entity.getUnitPrice()));
     }
 
     @Override
-    public boolean save(ItemDTO dto) throws SQLException, ClassNotFoundException {
-        return itemDAO.save(dto);
+    public boolean existItem(String id) throws SQLException, ClassNotFoundException {
+        return itemDAO.exist(id);
     }
 
     @Override
-    public boolean update(ItemDTO dto) throws SQLException, ClassNotFoundException {
-        return itemDAO.update(dto);
+    public void deleteItem(String id) throws SQLException, ClassNotFoundException {
+        itemDAO.delete(id);
     }
 
     @Override
-    public boolean exist(String code) throws SQLException, ClassNotFoundException {
-        return itemDAO.exist(code);
-    }
-
-    @Override
-    public String generateID() throws SQLException, ClassNotFoundException {
+    public String generateItemID() throws SQLException, ClassNotFoundException {
         return itemDAO.generateID();
     }
 
     @Override
-    public ItemDTO search(String code) throws SQLException, ClassNotFoundException {
-        return itemDAO.search(code);
+    public ItemDTO searchItem(String id) throws SQLException, ClassNotFoundException {
+        Item item = itemDAO.search(id);
+        return new ItemDTO(item.getCode(),item.getDescription(),item.getUnitPrice(), item.getQtyOnHand());
     }
 }
